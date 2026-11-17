@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PFT Desk</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="win" id="win"><span id="wtitle" hidden></span><div class="tabs " role="tablist"><button class="tab on" data-tab="att" onclick="showTab('att')"><i class="ti">✔</i><span>Attendance</span><b class="bdg" id="bd-att"></b></button><button class="tab" data-tab="sco" onclick="showTab('sco')"><i class="ti">★</i><span>Scores</span><b class="bdg" id="bd-sco"></b></button><button class="tab" data-tab="toi" onclick="showTab('toi')"><i class="ti">⏱</i><span>Permissions</span><b class="bdg" id="bd-toi"></b></button><button class="tab" data-tab="log" onclick="showTab('log')"><i class="ti">☰</i><span>Log</span><b class="bdg" id="bd-log"></b></button><button class="tab" data-tab="stat" onclick="showTab('stat')"><i class="ti">∑</i><span>Statistics</span><b class="bdg" id="bd-stat"></b></button></div><div class="tool"><label class="al" style="font-size:13px;color:var(--tx)">Workspace <select id="wsSel" onchange="switchWs(+this.value)"></select></label><button onclick="openWs()">Manage…</button><span class="sepv"></span>
+    <button onclick="allPresent()">Mark all present</button>
+    <button onclick="resetAtt()">Clear attendance</button>
+    <span class="sepv"></span>
+    <button onclick="resetScores()">Reset scores</button>
+    <span class="sepv"></span>
+    <button onclick="openGrp()">Groups…</button><button onclick="openSet()">Settings…</button><span class="sp"></span><button onclick="openAbout()">About…</button>
+  </div>
+  <div id="banner"></div><div class="body"><section class="pane on" id="pane-att"><div class="ph"><h2>Attendance</h2><span id="attc"></span></div><div class="ctl"><label>Sort by <select id="sortSel" onchange="S.sort=this.value;renderAtt()"><option value="name">Name (A–Z)</option><option value="class">Class</option><option value="group">Group</option></select></label><span class="sp"></span><button class="sm" onclick="openStu(null)">Add student</button><button class="sm" onclick="openImp()">Import CSV…</button></div><div class="list" id="att"></div></section>
+<section class="pane" id="pane-sco"><div class="ph"><h2>Session scores</h2><span id="lead"></span></div><div class="scores" id="sco"></div><div class="hh"><b>Score history</b><span id="hc"></span><button class="sm" id="undoBtn" onclick="undoScore()">Undo last</button></div><div class="list hl" id="hist"></div></section>
+<section class="pane" id="pane-toi"><div class="ph"><h2>Permissions</h2><span id="outc"></span></div><div class="list" id="toi"></div></section>
+<section class="pane" id="pane-log"><div class="ph"><h2>Permission log</h2><span id="logc"></span></div><div class="ctl"><span class="sp"></span><button class="sm" onclick="exportLog()">Export CSV…</button><button class="sm" onclick="clearLog()">Clear all finished</button></div><div class="list" id="log"></div></section>
+<section class="pane" id="pane-stat"><div class="ph"><h2>Student statistics</h2><span id="stc"></span></div><div class="list"><table class="lg"><thead><tr><th>Student</th><th>Trips</th><th>Time out</th><th>Average</th><th>Longest</th><th>Alerts</th><th>No timer</th><th>Last trip</th></tr></thead><tbody id="stb"></tbody></table></div><div class="hh" style="color:var(--mut)">Time statistics use timed trips only. Trips with no timer are counted separately.</div></section></div><div class="status">
+    <span>Clock <b id="clock"></b></span>
+    <span>Attendance due <b id="due"></b></span>
+    <span class="sp"></span>
+    <span id="saved"></span>
+  </div>
+  <div class="ov" id="alertOv"><div class="dlg" role="alertdialog" aria-labelledby="at"><div class="dh">Alert time reached</div><div class="db"><div class="ic">!</div><div><b id="at"></b><p id="ab" style="margin:4px 0 0;color:var(--mut)"></p></div></div><div class="df" id="af"></div></div></div>
+  <div class="ov" id="setOv"><div class="dlg"><div class="dh">Workspace settings</div><div class="db"><div class="form" id="form"></div></div><div class="df"><button onclick="closeSet()">Cancel</button><button class="pri" onclick="saveSet()">Apply</button></div></div></div>
+  <div class="ov" id="stuOv"><div class="dlg"><div class="dh" id="stt"></div><div class="db"><div class="form" id="sform"></div></div><div class="df"><button id="sdel" onclick="delStu()" style="margin-right:auto;color:var(--neg)">Delete student</button><button onclick="$('stuOv').classList.remove('on')">Cancel</button><button class="pri" onclick="saveStu()">Save</button></div></div></div>
+  <div class="ov" id="impOv"><div class="dlg"><div class="dh">Import students from CSV</div><div class="db" style="flex-direction:column"><div style="color:var(--mut)">Columns: name, class, group. Group can be a name or a number. A header row is optional.</div><input type="file" id="imf" accept=".csv,text/csv,text/plain" onchange="readFile(this)"><textarea id="imt" rows="6" placeholder="Or paste rows here:&#10;Aiden Brooks,5A,Matthew&#10;Bella Nguyen,5B,Mark"></textarea><label><input type="checkbox" id="imr"> Replace the current student list</label></div><div class="df"><button onclick="$('impOv').classList.remove('on')">Cancel</button><button class="pri" onclick="doImport()">Import</button></div></div></div>
+  <div class="ov" id="grpOv"><div class="dlg"><div class="dh">Groups in this workspace</div><div class="db" style="flex-direction:column"><div id="grows" style="width:100%;max-height:300px;overflow:auto"></div><div style="color:var(--mut)">Students in a deleted group move to the first group. Scores stay with each group.</div></div><div class="df"><button onclick="addGrow()" style="margin-right:auto">Add group</button><button onclick="$('grpOv').classList.remove('on')">Cancel</button><button class="pri" onclick="saveGrp()">Save</button></div></div></div>
+  <div class="ov" id="wsOv"><div class="dlg"><div class="dh">Workspaces</div><div class="db" style="flex-direction:column"><div id="wrows" style="width:100%;max-height:300px;overflow:auto"></div><div style="color:var(--mut)">Each workspace keeps its own students, groups, scores and permission log. Deleting one removes all of that.</div></div><div class="df"><button onclick="addWs()" style="margin-right:auto">Add workspace</button><button class="pri" onclick="closeWs()">Done</button></div></div></div>
+  <div class="ov" id="aboutOv"><div class="dlg"><div class="dh">About PFT Desk</div><div class="db"><div class="ic" style="background:var(--hi);color:var(--onhi)">P</div><div><b>PFT Desk</b><p>Attendance, permission tracking and session scores for Power Fun Time (PFT) and other school events. Workspaces keep each event’s students, groups and logs separate.</p><p style="color:var(--mut)">Your data is saved automatically to:<br><code id="dpath" style="word-break:break-all"></code></p><p>This program was made with prominent use of Claude, Anthropic’s AI model. Proceed with this knowledge and with caution.</p><p style="color:var(--mut)">Version: 0.9</p></div></div><div class="df"><button class="pri" onclick="$('aboutOv').classList.remove('on')">Close</button></div></div></div>
+  <div class="pmenu" id="pmenu"></div>
+  <div class="toast" id="toast"></div></div>
+
+<script src="i18n.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
