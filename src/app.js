@@ -1,6 +1,9 @@
 /* PFT Desk – app logic (real time, saved data, native features via Tauri). */
 const T=window.__TAURI__;
 const $=id=>document.getElementById(id);
+const mobile=/Android/i.test(navigator.userAgent);
+const mq=window.matchMedia('(max-width:700px)'),applyM=()=>document.documentElement.classList.toggle('m',mq.matches||mobile);
+mq.addEventListener('change',applyM);applyM();
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 [['Export CSV…','Ekspor CSV…','导出 CSV…'],['Log exported','Catatan diekspor','记录已导出'],['Could not export the log','Tidak dapat mengekspor catatan','无法导出记录'],['Sound on alerts','Suara saat alarm','提醒时播放声音'],['Desktop notifications','Notifikasi desktop','桌面通知'],['Clock','Jam','时钟'],['Off','Nonaktif','关闭'],['Arrived {0}','Tiba {0}','到达 {0}'],['All changes saved','Semua perubahan tersimpan','所有更改已保存'],['Could not save data','Tidak dapat menyimpan data','无法保存数据'],['Your data is saved automatically to:','Data Anda disimpan otomatis ke:','您的数据会自动保存到：'],
 ['Saved data could not be read. A backup copy may exist next to the data file.','Data tersimpan tidak dapat dibaca. Salinan cadangan mungkin ada di samping berkas data.','无法读取已保存的数据。数据文件旁可能有备份副本。'],['Test build, version 0.9','Versi uji, versi 0.9','测试版，版本 0.9'],
@@ -8,15 +11,16 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 ].forEach(([e,i,z])=>{D.id[e]=i;D.zh[e]=z});
 [['Went home','Pulang','已回家'],['Leaving school for the day','Pulang untuk hari ini','今天提前离校'],['Undo','Urungkan','撤销'],['Went home {0}','Pulang {0}','{0} 已回家'],['{0} went home','{0} pulang','{0} 已回家'],['Went home status removed for {0}','Status pulang untuk {0} dibatalkan','已取消 {0} 的回家状态']].forEach(([e,i,z])=>{D.id[e]=i;D.zh[e]=z});
 [['This program was made with prominent use of Claude, Anthropic’s AI model. Proceed with this knowledge and with caution.','Program ini dibuat dengan penggunaan Claude, model AI dari Anthropic, secara menonjol. Lanjutkan dengan mengetahui hal ini dan dengan hati-hati.','本程序大量使用了 Anthropic 的 AI 模型 Claude 制作。请在了解这一点的前提下谨慎使用。'],['Version: 0.9','Versi: 0.9','版本：0.9']].forEach(([e,i,z])=>{D.id[e]=i;D.zh[e]=z});
+[['Randomizer','Pengacak','随机抽选'],['Students per group','Siswa per kelompok','每组人数'],['Skip students already picked','Lewati siswa yang sudah terpilih','跳过已被抽中的学生'],['Pick students','Pilih siswa','抽选学生'],['Clear picks','Hapus pilihan','清除抽选记录'],['{0} available to pick','{0} siswa tersedia','{0} 人可抽选'],['{0} already picked','{0} sudah terpilih','已抽中 {0} 人'],['Only {0} available','Hanya {0} tersedia','仅有 {0} 人可选'],['No one available','Tidak ada yang tersedia','无人可选'],['Press “Pick students” to choose players.','Tekan “Pilih siswa” untuk memilih pemain.','点击“抽选学生”来选出参赛者。'],['Nobody is available to pick. Mark students as present first.','Tidak ada siswa yang tersedia. Tandai siswa hadir terlebih dahulu.','没有可抽选的学生。请先将学生标记为出席。'],['Picked {0} students','Memilih {0} siswa','已抽选 {0} 名学生'],['Picks cleared','Pilihan dihapus','已清除抽选记录']].forEach(([e,i,z])=>{D.id[e]=i;D.zh[e]=z});
 const fg=c=>{const n=parseInt(c.slice(1),16);return ((n>>16)*299+(n>>8&255)*587+(n&255)*114)/1000>150?'#1f1f1f':'#fff'};
 const PAL=['#da4453','#f5c211','#27ae60','#1d99f3','#8e44ad','#e67e22','#16a085','#e84393'];
 const S={lang:'en',sound:true,notif:true,cur:0,ws:[],next:1,tab:'att',edit:null,askDel:-1};
 const nid=()=>S.next++;
 const mkG=(n,c)=>({id:nid(),n,c,f:fg(c),s:0});
-const mkWs=(name,g,names,cls)=>({id:nid(),name,g,st:names.map((n,i)=>({id:nid(),n,c:cls[i%cls.length],g:g[i%g.length].id})),att:{},home:{},out:{},log:[],hist:[],due:'14:15',dueOn:true,lim:0,max:0,ban:false,sort:'name'});
+const mkWs=(name,g,names,cls)=>({id:nid(),name,g,st:names.map((n,i)=>({id:nid(),n,c:cls[i%cls.length],g:g[i%g.length].id})),att:{},home:{},out:{},log:[],hist:[],rand:{n:2,skip:false,res:null,used:[]},due:'14:15',dueOn:true,lim:0,max:0,ban:false,sort:'name'});
 function seed(){S.ws=[mkWs('PFT',[mkG('Matthew','#da4453'),mkG('Mark','#f5c211'),mkG('Luke','#27ae60'),mkG('John','#1d99f3')],['Aiden Brooks','Bella Nguyen','Caleb Tan','Daisy Wong','Ethan Lim','Fiona Reyes','Gabriel Ong','Hannah Lee','Isaac Chua','Jade Patel','Kai Santos','Lily Ramos','Micah Yeo','Nora Fernandez','Owen Gomez','Priya Nair'],['5A','5B','6A']),
   mkWs('NS Cup',[mkG('Crimson','#c0392b'),mkG('Navy','#2c5aa0'),mkG('Emerald','#1e9e6a')],['Amir Hassan','Beth Collins','Chen Wei','Dina Park','Eli Moreau','Farah Khan','Gus Lindqvist','Hana Sato'],['7A','7B'])]}
-const WF=['st','g','att','home','out','log','hist','due','dueOn','lim','max','ban','sort'];
+const WF=['st','g','att','home','out','log','hist','rand','due','dueOn','lim','max','ban','sort'];
 const saveWs=()=>WF.forEach(k=>S.ws[S.cur][k]=S[k]);
 const loadWs=i=>{S.cur=i;WF.forEach(k=>S[k]=S.ws[i][k])};
 /* time helpers: everything is stored as epoch milliseconds */
@@ -62,7 +66,7 @@ function renderAtt(){
   let last=null,h='';const day=S.att[dkey()]||{},hm=S.home[dkey()]||{};
   sorted().forEach(s=>{const g=gp(s.g),o=S.out[s.id],p=!!day[s.id],ho=hm[s.id],key=S.sort==='class'?(s.c||tr('No class')):S.sort==='group'?g.n:null;
     if(key!==null&&key!==last){last=key;h+=`<div class="grp">${esc(key)}</div>`}
-    h+=`<div class="row ${p||ho?'':'abs'}"><input type="checkbox" ${p?'checked':''} onchange="togP(${s.id})" aria-label="${esc(tr('Present: {0}',s.n))}"><div class="av" style="background:${g.c};color:${g.f}">${esc(s.n[0]||'?')}</div><div class="nm">${esc(s.n)}<small>${esc(s.c||tr('No class'))} · ${esc(g.n)}${ho?'':' · '+(p?tr('Arrived {0}',fmt(day[s.id])):tr('not here yet'))}</small></div>${o?`<span class="tag out">${tr('Out')}</span>`:''}${ho?`<span class="tag home">${tr('Went home {0}',fmt(ho.t))}</span><button class="sm" onclick="undoHome(${s.id})">${tr('Undo')}</button>`:`<button class="sm" onclick="permMenu(event,${s.id})">${tr('Permission')} ▾</button>`}<button class="sm" onclick="openStu(${s.id})" aria-label="${esc(tr('Edit {0}',s.n))}">${tr('Edit')}</button></div>`});
+    h+=`<div class="row ${p||ho?'':'abs'}"><input type="checkbox" ${p?'checked':''} onchange="togP(${s.id})" aria-label="${esc(tr('Present: {0}',s.n))}"><div class="av" style="background:${g.c};color:${g.f}">${esc(s.n[0]||'?')}</div><div class="nm">${esc(s.n)}<small>${esc(s.c||tr('No class'))} · ${esc(g.n)}${ho?'':' · '+(p?tr('Arrived {0}',fmt(day[s.id])):tr('not here yet'))}</small></div><div class="act">${o?`<span class="tag out">${tr('Out')}</span>`:''}${ho?`<span class="tag home">${tr('Went home {0}',fmt(ho.t))}</span><button class="sm" onclick="undoHome(${s.id})">${tr('Undo')}</button>`:`<button class="sm" onclick="permMenu(event,${s.id})">${tr('Permission')} ▾</button>`}<button class="sm" onclick="openStu(${s.id})" aria-label="${esc(tr('Edit {0}',s.n))}">${tr('Edit')}</button></div></div>`});
   $('att').innerHTML=h||`<div class="empty">${tr('No students in this workspace yet.<br>Use “Add student” or “Import CSV…”.')}</div>`;
   $('attc').textContent=tr('{0} of {1} present',S.st.filter(s=>day[s.id]).length,S.st.length)+(S.st.some(s=>hm[s.id])?' · '+tr('{0} went home',S.st.filter(s=>hm[s.id]).length):'');
   renderBanner()}
@@ -112,7 +116,7 @@ function badges(){const n=Object.keys(S.out).length,late=Object.values(S.out).so
 function marks(){[...$('wsSel').options].forEach((o,i)=>{const w=S.ws[i];if(!w)return;const n=Object.keys(w.out).length,late=Object.values(w.out).some(x=>x.lim&&secs(x.start)>x.lim);o.textContent=w.name+(late?' '+tr('⚠ alert'):n?' · '+tr('{0} out',n):'')})}
 function live(){
   saveWs();$('clock').textContent=dateLabel(dkey(),1)+', '+fmt(Date.now(),true);$('due').textContent=S.dueOn?fmt(dueMs()):tr('Off');
-  renderToi();renderBanner();checkAlert();badges();renderLog();renderStats();marks()}
+  renderToi();renderBanner();checkAlert();badges();renderLog();renderStats();marks();randInfo()}
 /* alerts: scan every workspace so a timer in a hidden workspace still notifies */
 function scan(){saveWs();S.ws.forEach(w=>Object.entries(w.out).forEach(([id,o])=>{
   if(o.lim&&secs(o.start)>=o.lim&&o.fired!==o.lim){o.fired=o.lim;const r=w.log.find(x=>x.id===o.rid);if(r)r.notes.push(['Alert reached at {0}',mmss(o.lim)]);
@@ -127,7 +131,10 @@ function checkAlert(){
   ov.dataset.id=id;$('at').textContent=tr('{0} has been out longer than the alert time',s.n);
   $('af').innerHTML=`<button class="pri" onclick="extMenu(event,${id})">${tr('Extend timer or dismiss alert')} ▾</button><button onclick="back(${id})">${tr('Back in class')}</button>`;
   ov.classList.add('on')}
-function closeOut(id,note){const o=S.out[id];if(!o)return;const r=recOf(o);if(r){r.end=Date.now();if(note)r.notes.push([note])}delete S.out[id]}
+/* Android: JS timers pause in the background, so alerts are also scheduled as native notifications */
+function unsched(rid){if(!mobile||!T)return;try{T.notification.cancel([rid])}catch(e){}}
+function schedAlert(id){const o=S.out[id];if(!mobile||!T||!S.notif||!o||!o.lim)return;unsched(o.rid);try{const N=T.notification;N.sendNotification({id:o.rid,title:'PFT Desk — '+S.ws[S.cur].name,body:tr('{0} has been out longer than the alert time',st(id).n),schedule:N.Schedule.at(new Date(o.start+o.lim*1000),false,true)})}catch(e){}}
+function closeOut(id,note){const o=S.out[id];if(!o)return;unsched(o.rid);const r=recOf(o);if(r){r.end=Date.now();if(note)r.notes.push([note])}delete S.out[id]}
 function showTab(k){S.tab=k;document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('on',b.dataset.tab===k));document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='pane-'+k))}
 /* actions */
 function goHome(id){const s=st(id),k=dkey();closeOut(id,'Went home');if(S.att[k])delete S.att[k][id];const rec={id:nid(),sid:id,n:s.n,g:s.g,day:k,start:Date.now(),end:Date.now(),home:true,notes:[]};S.log.push(rec);S.home[k]=S.home[k]||{};S.home[k][id]={t:rec.start,rid:rec.id};S.ban=false;renderAtt();live();toast(tr('{0} went home',s.n))}
@@ -144,16 +151,16 @@ function undoScore(){const h=S.hist.pop();if(!h){toast(tr('Nothing to undo'));re
 function goOut(id,timer){
   if(timer&&full()){toast(tr('Limit of {0} students out at once reached',S.max));return}
   const s0=st(id),rec={id:nid(),sid:id,n:s0.n,g:s0.g,day:dkey(),start:Date.now(),end:null,timer,notes:[]};S.log.push(rec);
-  S.out[id]={start:rec.start,lim:timer?S.lim*60:0,timer,rid:rec.id};renderAtt();live();toast(tr('{0} has permission to leave',s0.n))}
-function setLim(id,m){S.out[id].lim=m*60;live()}
-function ext(id,m){const o=S.out[id];o.lim=(o.lim||secs(o.start))+m*60;recOf(o).notes.push(['Extended {0} min',m]);live();toast(tr('Alert for {0} moved back {1} min',st(id).n,m))}
+  S.out[id]={start:rec.start,lim:timer?S.lim*60:0,timer,rid:rec.id};schedAlert(id);renderAtt();live();toast(tr('{0} has permission to leave',s0.n))}
+function setLim(id,m){S.out[id].lim=m*60;schedAlert(id);live()}
+function ext(id,m){const o=S.out[id];o.lim=(o.lim||secs(o.start))+m*60;recOf(o).notes.push(['Extended {0} min',m]);schedAlert(id);live();toast(tr('Alert for {0} moved back {1} min',st(id).n,m))}
 function back(id){const n=st(id).n;closeOut(id,'');renderAtt();live();toast(tr('{0} is back in class',n))}
-function excuse(id){const o=S.out[id];o.lim=0;recOf(o).notes.push(['Alert dismissed']);live();toast(tr('Alert dismissed for {0}',st(id).n))}
+function excuse(id){const o=S.out[id];o.lim=0;unsched(o.rid);recOf(o).notes.push(['Alert dismissed']);live();toast(tr('Alert dismissed for {0}',st(id).n))}
 function logCsv(){const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
   return 'student,date,left,back,minutes,notes\r\n'+S.log.map(r=>[r.n,dateLabel(r.day,1),fmt(r.start,true),r.end==null||r.home?'':fmt(r.end,true),r.timer===false||r.home?'':Math.floor(((r.end==null?Date.now():r.end)-r.start)/60000),noteTxt(r)].map(q).join(',')).join('\r\n')}
 async function exportLog(){
-  try{if(T){const path=await T.dialog.save({defaultPath:'pft-permission-log.csv',filters:[{name:'CSV',extensions:['csv']}]});if(!path)return;await T.core.invoke('write_text_file',{path,contents:'\uFEFF'+logCsv()})}else await navigator.clipboard.writeText(logCsv());
-    toast(tr('Log exported'))}catch(e){toast(tr('Could not export the log'))}}
+  try{if(T&&!mobile){const path=await T.dialog.save({defaultPath:'pft-permission-log.csv',filters:[{name:'CSV',extensions:['csv']}]});if(!path)return;await T.core.invoke('write_text_file',{path,contents:'\uFEFF'+logCsv()})}else await navigator.clipboard.writeText(logCsv());
+    toast(tr(mobile?'Log copied as CSV':'Log exported'))}catch(e){toast(tr('Could not export the log'))}}
 function clearLog(){S.log=S.log.filter(r=>r.end==null);renderLog();badges();toast(tr('Finished entries cleared'))}
 function clearDay(d){S.log=S.log.filter(r=>!(r.day===d&&r.end!=null));renderLog();badges();toast(tr('Cleared finished entries for {0}',dateLabel(d,1)))}
 /* students */
@@ -206,7 +213,7 @@ function saveGrp(){const rows=[...$('grows').children];if(!rows.length){toast(tr
   S.g=ng;const keep=new Set(ng.map(x=>x.id));let moved=0;S.st.forEach(s=>{if(!keep.has(s.g)){s.g=ng[0].id;moved++}});
   $('grpOv').classList.remove('on');afterWs();toast(moved?tr('Groups saved · {0} moved to {1}',moved,ng[0].n):tr('Groups saved'))}
 function titles(){$('wsSel').innerHTML=S.ws.map((w,i)=>`<option value="${i}" ${i===S.cur?'selected':''}>${esc(w.name)}</option>`).join('');$('wtitle').textContent='PFT Desk — '+S.ws[S.cur].name;marks()}
-function afterWs(){sig='';delete $('log')._h;delete $('stb')._h;const o=$('alertOv');o.classList.remove('on');delete o.dataset.id;closeMenu();titles();$('sortSel').value=S.sort;renderAtt();renderSc();live()}
+function afterWs(){sig='';delete $('log')._h;delete $('stb')._h;const o=$('alertOv');o.classList.remove('on');delete o.dataset.id;closeMenu();titles();$('sortSel').value=S.sort;renderAtt();renderSc();renderRand();live()}
 function switchWs(i){if(i===S.cur)return;saveWs();loadWs(i);afterWs();toast(tr('Switched to {0}',S.ws[i].name))}
 function openWs(){S.askDel=-1;renderWs();$('wsOv').classList.add('on')}
 function closeWs(){S.askDel=-1;$('wsOv').classList.remove('on')}
@@ -217,6 +224,19 @@ function delWs(i){if(S.ws.length<2)return;if(S.askDel!==i){S.askDel=i;renderWs()
   S.askDel=-1;const nm=S.ws[i].name;
   if(i===S.cur){S.ws.splice(i,1);loadWs(Math.min(i,S.ws.length-1));afterWs()}else{saveWs();S.ws.splice(i,1);if(i<S.cur)S.cur--;titles()}
   renderWs();toast(tr('Deleted workspace {0}',nm))}
+function moreMenu(ev){menu(ev,[['Mark all present','allPresent()'],['Clear attendance','resetAtt()'],['Reset scores','resetScores()'],['Workspaces','openWs()'],['Groups…','openGrp()'],['Settings…','openSet()'],['About…','openAbout()']].map(([k,f])=>({t:tr(k),f})))}
+/* randomizer */
+function randElig(){const r=S.rand;return S.st.filter(s=>isP(s.id)&&!S.out[s.id]&&!(r.skip&&r.used.includes(s.id)))}
+function randInfo(){const r=S.rand;$('rinfo').textContent=tr('{0} available to pick',randElig().length)+(r.used.length?' · '+tr('{0} already picked',r.used.length):'')}
+function randOpt(){S.rand.n=Math.max(1,Math.min(20,+$('rn').value||1));S.rand.skip=$('rs').checked;renderRand()}
+function randPick(){randOpt();const r=S.rand;
+  r.res=S.g.map(g=>{const pool=randElig().filter(s=>s.g===g.id);for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}return{g:g.id,avail:pool.length,ids:pool.slice(0,r.n).map(s=>s.id)}});
+  r.res.forEach(x=>x.ids.forEach(id=>{if(!r.used.includes(id))r.used.push(id)}));
+  renderRand();toast(tr('Picked {0} students',r.res.reduce((a,x)=>a+x.ids.length,0)))}
+function randClear(){S.rand.res=null;S.rand.used=[];renderRand();toast(tr('Picks cleared'))}
+function renderRand(){const r=S.rand;$('rn').value=r.n;$('rs').checked=r.skip;randInfo();
+  $('rres').innerHTML=!r.res?`<div class="empty">${tr(S.st.some(s=>isP(s.id))?'Press “Pick students” to choose players.':'Nobody is available to pick. Mark students as present first.')}</div>`:r.res.map(x=>{const g=gp(x.g);
+    return `<div class="sc"><div class="h" style="background:${g.c};color:${g.f}"><span>${esc(g.n)}</span><span>${x.ids.length}</span></div><div class="rl">${x.ids.map(id=>{const s=st(id);return s?`<div class="row"><div class="av" style="background:${g.c};color:${g.f}">${esc(s.n[0])}</div><div class="nm">${esc(s.n)}<small>${esc(s.c||tr('No class'))}</small></div></div>`:''}).join('')}${!x.avail?`<div class="note">${tr('No one available')}</div>`:x.ids.length<r.n?`<div class="note">${tr('Only {0} available',x.avail)}</div>`:''}</div></div>`}).join('')}
 function openAbout(){$('aboutOv').classList.add('on')}
 /* start-up */
 let lastDay=dkey();
@@ -225,7 +245,7 @@ async function init(){
   let raw=null,bad=false,ok=false;
   try{raw=await store.load()}catch(e){bad=true}
   if(raw){try{const d=JSON.parse(raw);if(d.v!==1||!Array.isArray(d.ws)||!d.ws.length)throw 0;
-    S.lang=d.lang||'en';S.sound=d.sound!==false;S.notif=d.notif!==false;S.next=d.next||1;S.ws=d.ws;S.ws.forEach(w=>{w.home=w.home||{}});loadWs(Math.min(d.cur||0,d.ws.length-1));ok=true}catch(e){bad=true}}
+    S.lang=d.lang||'en';S.sound=d.sound!==false;S.notif=d.notif!==false;S.next=d.next||1;S.ws=d.ws;S.ws.forEach(w=>{w.home=w.home||{};w.rand=w.rand||{n:2,skip:false,res:null,used:[]}});loadWs(Math.min(d.cur||0,d.ws.length-1));ok=true}catch(e){bad=true}}
   if(!ok){seed();loadWs(0)}
   document.documentElement.lang=S.lang;trStatic();afterWs();
   if(bad)toast(tr('Saved data could not be read. A backup copy may exist next to the data file.'));

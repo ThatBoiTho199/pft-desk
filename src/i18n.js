@@ -28,7 +28,7 @@ const D={id:{},zh:{}},LOC={en:'en-US',id:'id-ID',zh:'zh-CN'};
 ['{0} student','{0} siswa','{0} 名学生'],['{0} students','{0} siswa','{0} 名学生'],['No group','Tanpa kelompok','无分组'],['Delete','Hapus','删除'],['Confirm delete','Konfirmasi hapus','确认删除'],['Open','Buka','打开'],['Colour','Warna','颜色'],['Group name','Nama kelompok','分组名称'],['Workspace name','Nama ruang kerja','工作区名称'],['Group {0}','Kelompok {0}','分组 {0}'],['Workspace {0}','Ruang kerja {0}','工作区 {0}']
 ].forEach(([e,i,z])=>{D.id[e]=i;D.zh[e]=z});
 function tr(k,...a){let v=S.lang==='en'?k:(D[S.lang][k]||k);a.forEach((x,i)=>v=v.split('{'+i+'}').join(x));return v}
-const ORIG=new WeakMap(),SKIP='#att,#sco,#hist,#toi,#log,#stb,#banner,#form,#grows,#wrows,#af,#toast,#pmenu,#sform,#wsSel,#clock,#due,#attc,#lead,#outc,#logc,#hc,#stc,#wtitle,#at,#ab,#stt,#saved,#dpath,.bdg,script,style';
+const ORIG=new WeakMap(),SKIP='#att,#sco,#hist,#toi,#log,#stb,#banner,#form,#grows,#wrows,#af,#toast,#pmenu,#sform,#wsSel,#clock,#due,#attc,#lead,#outc,#logc,#hc,#stc,#wtitle,#at,#ab,#stt,#saved,#dpath,#rres,#rinfo,.bdg,script,style';
 function trStatic(){const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;
   while(n=w.nextNode()){if(n.parentElement.closest(SKIP))continue;const raw=ORIG.has(n)?ORIG.get(n):n.nodeValue,k=raw.trim();if(!k)continue;ORIG.set(n,raw);const v=tr(k);n.nodeValue=raw.replace(k,()=>v)}
   $('imt').placeholder=tr('Or paste rows here:')+'\nAiden Brooks,5A,Matthew\nBella Nguyen,5B,Mark'}

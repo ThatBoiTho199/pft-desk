@@ -25,3 +25,17 @@ Delete that file to reset to the sample data.
 1. Create a **private** GitHub repository and upload the contents of this folder (including the hidden `.github` folder).
 2. Open the repo's **Actions** tab, pick "Build Windows installer", and press **Run workflow**.
 3. When it finishes (about 10 minutes), open the run and download the **pft-desk-windows** artifact. It contains the installer and the portable exe.
+
+## Android
+The same code runs on Android: the layout switches to a phone layout (bottom tabs, ⋮ menu) on narrow screens.
+Extra setup: install **Android Studio**, then in SDK Manager add "NDK (Side by side)" and "Command-line Tools".
+Set `ANDROID_HOME`, `NDK_HOME` and `JAVA_HOME` (Android Studio's bundled `jbr` folder works), then:
+```
+rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
+npm run tauri icon app-icon.png
+npm run tauri android init
+npm run tauri android dev                                              (emulator or USB phone)
+npm run tauri android build -- --debug --apk --target aarch64          (APK you can sideload)
+```
+The APK ends up under `src-tauri/gen/android/app/build/outputs/apk/`. Copy it to the phone and allow "install unknown apps".
+`.github/workflows/build-android.yml` tries the same build on GitHub (untested).

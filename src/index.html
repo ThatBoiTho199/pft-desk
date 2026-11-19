@@ -2,24 +2,25 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PFT Desk</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="win" id="win"><span id="wtitle" hidden></span><div class="tabs " role="tablist"><button class="tab on" data-tab="att" onclick="showTab('att')"><i class="ti">✔</i><span>Attendance</span><b class="bdg" id="bd-att"></b></button><button class="tab" data-tab="sco" onclick="showTab('sco')"><i class="ti">★</i><span>Scores</span><b class="bdg" id="bd-sco"></b></button><button class="tab" data-tab="toi" onclick="showTab('toi')"><i class="ti">⏱</i><span>Permissions</span><b class="bdg" id="bd-toi"></b></button><button class="tab" data-tab="log" onclick="showTab('log')"><i class="ti">☰</i><span>Log</span><b class="bdg" id="bd-log"></b></button><button class="tab" data-tab="stat" onclick="showTab('stat')"><i class="ti">∑</i><span>Statistics</span><b class="bdg" id="bd-stat"></b></button></div><div class="tool"><label class="al" style="font-size:13px;color:var(--tx)">Workspace <select id="wsSel" onchange="switchWs(+this.value)"></select></label><button onclick="openWs()">Manage…</button><span class="sepv"></span>
+<div class="win" id="win"><span id="wtitle" hidden></span><div class="tabs " role="tablist"><button class="tab on" data-tab="att" onclick="showTab('att')"><i class="ti">✔</i><span>Attendance</span><b class="bdg" id="bd-att"></b></button><button class="tab" data-tab="sco" onclick="showTab('sco')"><i class="ti">★</i><span>Scores</span><b class="bdg" id="bd-sco"></b></button><button class="tab" data-tab="toi" onclick="showTab('toi')"><i class="ti">⏱</i><span>Permissions</span><b class="bdg" id="bd-toi"></b></button><button class="tab" data-tab="log" onclick="showTab('log')"><i class="ti">☰</i><span>Log</span><b class="bdg" id="bd-log"></b></button><button class="tab" data-tab="rand" onclick="showTab('rand')"><i class="ti">⚄</i><span>Randomizer</span></button><button class="tab" data-tab="stat" onclick="showTab('stat')"><i class="ti">∑</i><span>Statistics</span><b class="bdg" id="bd-stat"></b></button></div><div class="tool"><label class="al" style="font-size:13px;color:var(--tx)">Workspace <select id="wsSel" onchange="switchWs(+this.value)"></select></label><button onclick="openWs()">Manage…</button><span class="sepv"></span>
     <button onclick="allPresent()">Mark all present</button>
     <button onclick="resetAtt()">Clear attendance</button>
     <span class="sepv"></span>
     <button onclick="resetScores()">Reset scores</button>
     <span class="sepv"></span>
-    <button onclick="openGrp()">Groups…</button><button onclick="openSet()">Settings…</button><span class="sp"></span><button onclick="openAbout()">About…</button>
+    <button onclick="openGrp()">Groups…</button><button onclick="openSet()">Settings…</button><span class="sp"></span><button onclick="openAbout()">About…</button><button class="mob" onclick="moreMenu(event)" aria-label="More options">⋮</button>
   </div>
   <div id="banner"></div><div class="body"><section class="pane on" id="pane-att"><div class="ph"><h2>Attendance</h2><span id="attc"></span></div><div class="ctl"><label>Sort by <select id="sortSel" onchange="S.sort=this.value;renderAtt()"><option value="name">Name (A–Z)</option><option value="class">Class</option><option value="group">Group</option></select></label><span class="sp"></span><button class="sm" onclick="openStu(null)">Add student</button><button class="sm" onclick="openImp()">Import CSV…</button></div><div class="list" id="att"></div></section>
 <section class="pane" id="pane-sco"><div class="ph"><h2>Session scores</h2><span id="lead"></span></div><div class="scores" id="sco"></div><div class="hh"><b>Score history</b><span id="hc"></span><button class="sm" id="undoBtn" onclick="undoScore()">Undo last</button></div><div class="list hl" id="hist"></div></section>
 <section class="pane" id="pane-toi"><div class="ph"><h2>Permissions</h2><span id="outc"></span></div><div class="list" id="toi"></div></section>
 <section class="pane" id="pane-log"><div class="ph"><h2>Permission log</h2><span id="logc"></span></div><div class="ctl"><span class="sp"></span><button class="sm" onclick="exportLog()">Export CSV…</button><button class="sm" onclick="clearLog()">Clear all finished</button></div><div class="list" id="log"></div></section>
+<section class="pane" id="pane-rand"><div class="ph"><h2>Randomizer</h2><span id="rinfo"></span></div><div class="ctl"><label>Students per group <input type="number" id="rn" min="1" max="20" value="2" style="width:64px" onchange="randOpt()"></label><label><input type="checkbox" id="rs" onchange="randOpt()"> Skip students already picked</label><span class="sp"></span><button class="sm" onclick="randClear()">Clear picks</button><button class="pri" onclick="randPick()">Pick students</button></div><div class="scores" id="rres"></div></section>
 <section class="pane" id="pane-stat"><div class="ph"><h2>Student statistics</h2><span id="stc"></span></div><div class="list"><table class="lg"><thead><tr><th>Student</th><th>Trips</th><th>Time out</th><th>Average</th><th>Longest</th><th>Alerts</th><th>No timer</th><th>Last trip</th></tr></thead><tbody id="stb"></tbody></table></div><div class="hh" style="color:var(--mut)">Time statistics use timed trips only. Trips with no timer are counted separately.</div></section></div><div class="status">
     <span>Clock <b id="clock"></b></span>
     <span>Attendance due <b id="due"></b></span>
