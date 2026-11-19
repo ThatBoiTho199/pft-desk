@@ -31,4 +31,4 @@ function tr(k,...a){let v=S.lang==='en'?k:(D[S.lang][k]||k);a.forEach((x,i)=>v=v
 const ORIG=new WeakMap(),SKIP='#att,#sco,#hist,#toi,#log,#stb,#banner,#form,#grows,#wrows,#af,#toast,#pmenu,#sform,#wsSel,#clock,#due,#attc,#lead,#outc,#logc,#hc,#stc,#wtitle,#at,#ab,#stt,#saved,#dpath,#rres,#rinfo,.bdg,script,style';
 function trStatic(){const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;
   while(n=w.nextNode()){if(n.parentElement.closest(SKIP))continue;const raw=ORIG.has(n)?ORIG.get(n):n.nodeValue,k=raw.trim();if(!k)continue;ORIG.set(n,raw);const v=tr(k);n.nodeValue=raw.replace(k,()=>v)}
-  $('imt').placeholder=tr('Or paste rows here:')+'\nAiden Brooks,5A,Matthew\nBella Nguyen,5B,Mark'}
+  $('q').placeholder=tr('Search students…');$('imt').placeholder=tr('Or paste rows here:')+'\nAiden Brooks,5A,Matthew\nBella Nguyen,5B,Mark'}

@@ -12,6 +12,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 [['Went home','Pulang','已回家'],['Leaving school for the day','Pulang untuk hari ini','今天提前离校'],['Undo','Urungkan','撤销'],['Went home {0}','Pulang {0}','{0} 已回家'],['{0} went home','{0} pulang','{0} 已回家'],['Went home status removed for {0}','Status pulang untuk {0} dibatalkan','已取消 {0} 的回家状态']].forEach(([e,i,z])=>{D.id[e]=i;D.zh[e]=z});
 [['This program was made with prominent use of Claude, Anthropic’s AI model. Proceed with this knowledge and with caution.','Program ini dibuat dengan penggunaan Claude, model AI dari Anthropic, secara menonjol. Lanjutkan dengan mengetahui hal ini dan dengan hati-hati.','本程序大量使用了 Anthropic 的 AI 模型 Claude 制作。请在了解这一点的前提下谨慎使用。'],['Version: 0.9','Versi: 0.9','版本：0.9']].forEach(([e,i,z])=>{D.id[e]=i;D.zh[e]=z});
 [['Randomizer','Pengacak','随机抽选'],['Students per group','Siswa per kelompok','每组人数'],['Skip students already picked','Lewati siswa yang sudah terpilih','跳过已被抽中的学生'],['Pick students','Pilih siswa','抽选学生'],['Clear picks','Hapus pilihan','清除抽选记录'],['{0} available to pick','{0} siswa tersedia','{0} 人可抽选'],['{0} already picked','{0} sudah terpilih','已抽中 {0} 人'],['Only {0} available','Hanya {0} tersedia','仅有 {0} 人可选'],['No one available','Tidak ada yang tersedia','无人可选'],['Press “Pick students” to choose players.','Tekan “Pilih siswa” untuk memilih pemain.','点击“抽选学生”来选出参赛者。'],['Nobody is available to pick. Mark students as present first.','Tidak ada siswa yang tersedia. Tandai siswa hadir terlebih dahulu.','没有可抽选的学生。请先将学生标记为出席。'],['Picked {0} students','Memilih {0} siswa','已抽选 {0} 名学生'],['Picks cleared','Pilihan dihapus','已清除抽选记录']].forEach(([e,i,z])=>{D.id[e]=i;D.zh[e]=z});
+[['Search students…','Cari siswa…','搜索学生…'],['No students match “{0}”.','Tidak ada siswa yang cocok dengan “{0}”.','没有与“{0}”匹配的学生。'],['{0} shown','{0} ditampilkan','显示 {0} 人']].forEach(([e,i,z])=>{D.id[e]=i;D.zh[e]=z});
 const fg=c=>{const n=parseInt(c.slice(1),16);return ((n>>16)*299+(n>>8&255)*587+(n&255)*114)/1000>150?'#1f1f1f':'#fff'};
 const PAL=['#da4453','#f5c211','#27ae60','#1d99f3','#8e44ad','#e67e22','#16a085','#e84393'];
 const S={lang:'en',sound:true,notif:true,cur:0,ws:[],next:1,tab:'att',edit:null,askDel:-1};
@@ -55,20 +56,25 @@ function menu(ev,items){ev.stopPropagation();const m=$('pmenu'),w=$('win').getBo
   m.style.left=Math.max(8,x)+'px';m.style.top=Math.max(8,y)+'px'}
 function closeMenu(){$('pmenu').classList.remove('on')}
 document.addEventListener('click',closeMenu);
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='f'){e.preventDefault();showTab('att');const q=$('q');q.focus();q.select()}});
 const full=()=>S.max&&Object.keys(S.out).length>=S.max;
 function permMenu(ev,id){const can=isP(id)&&!S.out[id],fl=full();menu(ev,[{t:tr('Timer'),s:fl?tr('Limit reached ({0} out)',S.max):tr('Bathroom, errands…'),d:!can||fl,f:`goOut(${id},true)`},{t:tr('No timer'),s:tr('Emergencies and other situations'),d:!can,f:`goOut(${id},false)`},{t:tr('Went home'),s:tr('Leaving school for the day'),f:`goHome(${id})`}])}
 function extMenu(ev,id){menu(ev,[1,3,5].map(m=>({t:tr('Extend {0} min',m),f:`ext(${id},${m})`})).concat({t:tr('Dismiss alert'),f:`excuse(${id})`}))}
 /* rendering */
+let Q='';
+const nrm=t=>String(t).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+function matchQ(s){const q=nrm(Q).trim();if(!q)return true;const hay=nrm(s.n+' '+(s.c||'')+' '+gp(s.g).n);return q.split(/\s+/).every(t=>hay.includes(t))}
 function sorted(){const a=[...S.st],nc=(x,y)=>x.n.localeCompare(y.n);
   if(S.sort==='class')a.sort((x,y)=>x.c.localeCompare(y.c,undefined,{numeric:true})||nc(x,y));
   else if(S.sort==='group')a.sort((x,y)=>gi(x.g)-gi(y.g)||nc(x,y));else a.sort(nc);return a}
 function renderAtt(){
   let last=null,h='';const day=S.att[dkey()]||{},hm=S.home[dkey()]||{};
-  sorted().forEach(s=>{const g=gp(s.g),o=S.out[s.id],p=!!day[s.id],ho=hm[s.id],key=S.sort==='class'?(s.c||tr('No class')):S.sort==='group'?g.n:null;
+  sorted().filter(matchQ).forEach(s=>{const g=gp(s.g),o=S.out[s.id],p=!!day[s.id],ho=hm[s.id],key=S.sort==='class'?(s.c||tr('No class')):S.sort==='group'?g.n:null;
     if(key!==null&&key!==last){last=key;h+=`<div class="grp">${esc(key)}</div>`}
     h+=`<div class="row ${p||ho?'':'abs'}"><input type="checkbox" ${p?'checked':''} onchange="togP(${s.id})" aria-label="${esc(tr('Present: {0}',s.n))}"><div class="av" style="background:${g.c};color:${g.f}">${esc(s.n[0]||'?')}</div><div class="nm">${esc(s.n)}<small>${esc(s.c||tr('No class'))} · ${esc(g.n)}${ho?'':' · '+(p?tr('Arrived {0}',fmt(day[s.id])):tr('not here yet'))}</small></div><div class="act">${o?`<span class="tag out">${tr('Out')}</span>`:''}${ho?`<span class="tag home">${tr('Went home {0}',fmt(ho.t))}</span><button class="sm" onclick="undoHome(${s.id})">${tr('Undo')}</button>`:`<button class="sm" onclick="permMenu(event,${s.id})">${tr('Permission')} ▾</button>`}<button class="sm" onclick="openStu(${s.id})" aria-label="${esc(tr('Edit {0}',s.n))}">${tr('Edit')}</button></div></div>`});
-  $('att').innerHTML=h||`<div class="empty">${tr('No students in this workspace yet.<br>Use “Add student” or “Import CSV…”.')}</div>`;
+  $('att').innerHTML=h||(Q.trim()&&S.st.length?`<div class="empty">${esc(tr('No students match “{0}”.',Q.trim()))}</div>`:null)||`<div class="empty">${tr('No students in this workspace yet.<br>Use “Add student” or “Import CSV…”.')}</div>`;
   $('attc').textContent=tr('{0} of {1} present',S.st.filter(s=>day[s.id]).length,S.st.length)+(S.st.some(s=>hm[s.id])?' · '+tr('{0} went home',S.st.filter(s=>hm[s.id]).length):'');
+  if(Q.trim())$('attc').textContent+=' · '+tr('{0} shown',S.st.filter(matchQ).length);
   renderBanner()}
 function renderBanner(){
   const miss=S.st.filter(s=>!isP(s.id)&&!isH(s.id));
